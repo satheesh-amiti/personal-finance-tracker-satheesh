@@ -1,9 +1,12 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - personal-finance-tracker-backend
+name: Deploy Backend to Azure App Service
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "personal-finance-tracker-backend/**"
+      - ".github/workflows/deploy-backend-app-service.yml"
   workflow_dispatch:
 
 jobs:
@@ -11,9 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: personal-finance-tracker-backend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
@@ -32,8 +39,8 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ./publish
+          name: backend-app
+          path: personal-finance-tracker-backend/publish
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,7 +53,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: backend-app
           path: ./publish
 
       - name: Login to Azure
@@ -57,9 +64,8 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "personal-finance-tracker-backend"
-          slot-name: "Production"
+          app-name: personal-finance-tracker-backend
+          slot-name: Production
           package: ./publish
