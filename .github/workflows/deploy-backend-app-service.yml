@@ -14,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: personal-finance-tracker-backend
 
     steps:
       - name: Checkout repository
@@ -29,12 +26,15 @@ jobs:
 
       - name: Restore
         run: dotnet restore PersonalFinance.sln
+        working-directory: ./personal-finance-tracker-backend
 
       - name: Build
         run: dotnet build src/PersonalFinance.Api/PersonalFinance.Api.csproj --configuration Release --no-restore
+        working-directory: ./personal-finance-tracker-backend
 
       - name: Publish
         run: dotnet publish src/PersonalFinance.Api/PersonalFinance.Api.csproj --configuration Release --no-build --output ./publish
+        working-directory: ./personal-finance-tracker-backend
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -66,6 +66,6 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: personal-finance-tracker-backend
+          app-name: track-my-money-api
           slot-name: Production
           package: ./publish
